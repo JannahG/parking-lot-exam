@@ -50,4 +50,12 @@ public class Vehicle {
     public void setOwnerName(String ownerName) {
         this.ownerName = ownerName;
     }
+
+    public ParkingLot getParkingLot() {
+        return parkingLot;
+    }
+
+    public void setParkingLot(ParkingLot parkingLot) {
+        this.parkingLot = parkingLot;
+    }
 }
