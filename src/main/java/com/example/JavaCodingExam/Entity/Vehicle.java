@@ -1,5 +1,7 @@
 package com.example.JavaCodingExam.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import javax.validation.constraints.Pattern;
 
 import javax.persistence.*;
@@ -17,6 +19,7 @@ public class Vehicle {
 
     @ManyToOne
     @JoinColumn(name = "parkinglot_id")
+    @JsonBackReference
     private ParkingLot parkingLot;
 
     public Vehicle() {}

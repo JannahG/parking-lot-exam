@@ -1,5 +1,7 @@
 package com.example.JavaCodingExam.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -15,6 +17,7 @@ public class ParkingLot {
     private int capacity;
     private int occupiedSpaces;
     @OneToMany(mappedBy = "parkingLot")
+    @JsonManagedReference
     private List<Vehicle> vehicles;
 
     public ParkingLot(String lotId, String location, int capacity, int occupiedSpaces) {

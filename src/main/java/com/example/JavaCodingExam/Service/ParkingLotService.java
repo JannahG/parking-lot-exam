@@ -25,6 +25,7 @@ public class ParkingLotService {
         return vehicleRepository.save(vehicle);
     }
 
+    //To do: Add validation to check if vehicle is existing before checking in and add unit tests
     public void checkInVehicle(String lotId, Vehicle vehicle) {
         ParkingLot parkingLot = parkingLotRepository.findById(lotId).orElseThrow(() -> new RuntimeException("Parking lot not found"));
 
