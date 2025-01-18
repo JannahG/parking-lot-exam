@@ -1,9 +1,9 @@
 package com.example.JavaCodingExam.Controller;
 
+import com.example.JavaCodingExam.Controller.Response.SuccessResponse;
 import com.example.JavaCodingExam.Entity.ParkingLot;
 import com.example.JavaCodingExam.Entity.Vehicle;
 import com.example.JavaCodingExam.Service.ParkingLotService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,8 +13,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/parking-lots")
 public class ParkingLotController {
-    @Autowired
-    ParkingLotService parkingLotService;
+    private final ParkingLotService parkingLotService;
+
+    public ParkingLotController(ParkingLotService parkingLotService) {
+        this.parkingLotService = parkingLotService;
+    }
 
     @PostMapping
     public ResponseEntity<ParkingLot> createParkingLot(@RequestBody ParkingLot parkingLot) {
@@ -23,17 +26,17 @@ public class ParkingLotController {
     }
 
     @PostMapping("/{lotId}/check-in")
-    public void checkInVehicle(@PathVariable String lotId, @RequestBody Vehicle vehicle) {
-        parkingLotService.checkInVehicle(lotId, vehicle);
+    public ResponseEntity<?> checkInVehicle(@PathVariable String lotId, @RequestBody Vehicle vehicle) {
+        return parkingLotService.checkInVehicle(lotId, vehicle);
     }
 
     @PostMapping("/{lotId}/check-out")
-    public void checkOutVehicle(@PathVariable String lotId, @RequestBody Vehicle vehicle) {
-        parkingLotService.checkOutVehicle(lotId, vehicle);;
+    public ResponseEntity<?> checkOutVehicle(@PathVariable String lotId, @RequestBody Vehicle vehicle) {
+        return parkingLotService.checkOutVehicle(lotId, vehicle);
     }
 
     @GetMapping("/{lotId}/availability")
-    public String getAvailableParkingLots(@PathVariable String lotId) {
+    public ResponseEntity<SuccessResponse> getAvailableParkingLots(@PathVariable String lotId) {
         return parkingLotService.getParkingLotAvailability(lotId);
     }
 

@@ -1,21 +1,29 @@
 package com.example.JavaCodingExam.Service;
 
+import com.example.JavaCodingExam.Controller.Response.ErrorResponse;
+import com.example.JavaCodingExam.Controller.Response.SuccessResponse;
 import com.example.JavaCodingExam.Entity.ParkingLot;
 import com.example.JavaCodingExam.Entity.Vehicle;
 import com.example.JavaCodingExam.Repository.ParkingLotRepository;
 import com.example.JavaCodingExam.Repository.VehicleRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ParkingLotService {
-    @Autowired
-    private ParkingLotRepository parkingLotRepository;
+    private final ParkingLotRepository parkingLotRepository;
+    private final VehicleRepository vehicleRepository;
+    private final ParkingValidator parkingValidator;
 
-    @Autowired
-    private VehicleRepository vehicleRepository;
+    public ParkingLotService(ParkingLotRepository parkingLotRepository, VehicleRepository vehicleRepository, ParkingValidator parkingValidator) {
+        this.parkingLotRepository = parkingLotRepository;
+        this.vehicleRepository = vehicleRepository;
+        this.parkingValidator = parkingValidator;
+    }
 
     public ParkingLot registerParkingLot(ParkingLot parkingLot) {
         return parkingLotRepository.save(parkingLot);
@@ -25,42 +33,52 @@ public class ParkingLotService {
         return vehicleRepository.save(vehicle);
     }
 
-    //To do: Add validation to check if vehicle is existing before checking in and add unit tests
-    public void checkInVehicle(String lotId, Vehicle vehicle) {
+    public ResponseEntity<?> checkInVehicle(String lotId, Vehicle vehicle) {
+        Vehicle existingVehicle = vehicleRepository.findById(vehicle.getLicensePlate()).orElse(null);
+        ErrorResponse vehicleError = parkingValidator.ValidateCheckInVehicle(existingVehicle);
+        if (vehicleError != null) {
+            return new ResponseEntity<>(vehicleError, HttpStatus.valueOf(vehicleError.getHttpStatusCode()));
+        }
+
         ParkingLot parkingLot = parkingLotRepository.findById(lotId).orElseThrow(() -> new RuntimeException("Parking lot not found"));
-
-        if (!parkingLot.hasAvailableSpace()) {
-            throw new RuntimeException("Parking lot is full");
+        ErrorResponse parkingLotError = parkingValidator.ValidateParkingLotCheckInVehicle(parkingLot);
+        if (parkingLotError != null) {
+            return new ResponseEntity<>(parkingLotError, HttpStatus.valueOf(parkingLotError.getHttpStatusCode()));
         }
 
-        if (vehicle.getParkingLot() != null) {
-            throw new RuntimeException("Vehicle is already parked in another lot");
-        }
-
-        vehicle.setParkingLot(parkingLot);
+        existingVehicle.setParkingLot(parkingLot);
         parkingLot.setOccupiedSpaces(parkingLot.getOccupiedSpaces() + 1);
 
-        vehicleRepository.save(vehicle);
+        vehicleRepository.save(existingVehicle);
         parkingLotRepository.save(parkingLot);
+
+        SuccessResponse successResponse = new SuccessResponse(200, "Vehicle successfully checked into parking lot", Optional.of(existingVehicle));
+        return new ResponseEntity<>(successResponse, HttpStatus.OK);
     }
 
-    public void checkOutVehicle(String lotId, Vehicle vehicle) {
+    public ResponseEntity<?> checkOutVehicle(String lotId, Vehicle vehicle) {
         ParkingLot parkingLot = parkingLotRepository.findById(lotId).orElseThrow(() -> new RuntimeException("Parking lot not found"));
-
-        if (vehicle.getParkingLot() == null || !vehicle.getParkingLot().equals(parkingLot)) {
-            throw new RuntimeException("Vehicle is not parked in this lot");
+        Vehicle existingVehicle = vehicleRepository.findById(vehicle.getLicensePlate()).orElse(null);
+        ErrorResponse vehicleError = parkingValidator.ValidateCheckOutVehicle(existingVehicle, parkingLot);
+        if (vehicleError != null) {
+            return new ResponseEntity<>(vehicleError, HttpStatus.valueOf(vehicleError.getHttpStatusCode()));
         }
 
-        vehicle.setParkingLot(null);
+        existingVehicle.setParkingLot(null);
+        parkingLot.getVehicles().remove(existingVehicle);
         parkingLot.setOccupiedSpaces(parkingLot.getOccupiedSpaces() - 1);
 
-        vehicleRepository.save(vehicle);
+        vehicleRepository.save(existingVehicle);
         parkingLotRepository.save(parkingLot);
+
+        SuccessResponse successResponse = new SuccessResponse(200, "Vehicle successfully checked out the parking lot", Optional.of(existingVehicle));
+        return new ResponseEntity<>(successResponse, HttpStatus.OK);
     }
 
-    public String getParkingLotAvailability(String lotId) {
+    public ResponseEntity<SuccessResponse> getParkingLotAvailability(String lotId) {
         ParkingLot parkingLot = parkingLotRepository.findById(lotId).orElseThrow(() -> new RuntimeException("Parking lot not found"));
-        return "Available spaces: " + (parkingLot.getCapacity() - parkingLot.getOccupiedSpaces());
+        SuccessResponse successResponse = new SuccessResponse(200, "Available spaces: " + (parkingLot.getCapacity() - parkingLot.getOccupiedSpaces()), null);
+        return new ResponseEntity<>(successResponse, HttpStatus.OK);
     }
 
     public List<Vehicle> getVehiclesInParkingLot(String lotId) {
