@@ -29,6 +29,7 @@ public class ParkingLotService {
         return parkingLotRepository.save(parkingLot);
     }
 
+    //move to another service
     public Vehicle registerVehicle(Vehicle vehicle) {
         return vehicleRepository.save(vehicle);
     }
