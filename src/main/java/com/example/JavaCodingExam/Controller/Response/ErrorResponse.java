@@ -24,4 +24,17 @@ public class ErrorResponse {
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        ErrorResponse that = (ErrorResponse) obj;
+        return httpStatusCode == that.httpStatusCode && errorMessage.equals(that.errorMessage);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * httpStatusCode + errorMessage.hashCode();
+    }
 }

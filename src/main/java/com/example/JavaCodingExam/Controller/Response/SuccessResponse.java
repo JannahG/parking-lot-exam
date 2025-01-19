@@ -52,13 +52,4 @@ public class SuccessResponse {
     public int hashCode() {
         return Objects.hash(statusCode, message, data);
     }
-
-    @Override
-    public String toString() {
-        return "SuccessResponse{" +
-                "statusCode=" + statusCode +
-                ", message='" + message + '\'' +
-                ", data=" + data +
-                '}';
-    }
 }

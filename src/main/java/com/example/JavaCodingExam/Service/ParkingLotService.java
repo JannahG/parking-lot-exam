@@ -17,12 +17,12 @@ import java.util.Optional;
 public class ParkingLotService {
     private final ParkingLotRepository parkingLotRepository;
     private final VehicleRepository vehicleRepository;
-    private final ParkingValidator parkingValidator;
+    private final ParkingLotValidator parkingLotValidator;
 
-    public ParkingLotService(ParkingLotRepository parkingLotRepository, VehicleRepository vehicleRepository, ParkingValidator parkingValidator) {
+    public ParkingLotService(ParkingLotRepository parkingLotRepository, VehicleRepository vehicleRepository, ParkingLotValidator parkingLotValidator) {
         this.parkingLotRepository = parkingLotRepository;
         this.vehicleRepository = vehicleRepository;
-        this.parkingValidator = parkingValidator;
+        this.parkingLotValidator = parkingLotValidator;
     }
 
     public ParkingLot registerParkingLot(ParkingLot parkingLot) {
@@ -36,13 +36,13 @@ public class ParkingLotService {
 
     public ResponseEntity<?> checkInVehicle(String lotId, Vehicle vehicle) {
         Vehicle existingVehicle = vehicleRepository.findById(vehicle.getLicensePlate()).orElse(null);
-        ErrorResponse vehicleError = parkingValidator.ValidateCheckInVehicle(existingVehicle);
+        ErrorResponse vehicleError = parkingLotValidator.ValidateCheckInVehicle(existingVehicle);
         if (vehicleError != null) {
             return new ResponseEntity<>(vehicleError, HttpStatus.valueOf(vehicleError.getHttpStatusCode()));
         }
 
         ParkingLot parkingLot = parkingLotRepository.findById(lotId).orElseThrow(() -> new RuntimeException("Parking lot not found"));
-        ErrorResponse parkingLotError = parkingValidator.ValidateParkingLotCheckInVehicle(parkingLot);
+        ErrorResponse parkingLotError = parkingLotValidator.ValidateParkingLotCheckInVehicle(parkingLot);
         if (parkingLotError != null) {
             return new ResponseEntity<>(parkingLotError, HttpStatus.valueOf(parkingLotError.getHttpStatusCode()));
         }
@@ -60,7 +60,7 @@ public class ParkingLotService {
     public ResponseEntity<?> checkOutVehicle(String lotId, Vehicle vehicle) {
         ParkingLot parkingLot = parkingLotRepository.findById(lotId).orElseThrow(() -> new RuntimeException("Parking lot not found"));
         Vehicle existingVehicle = vehicleRepository.findById(vehicle.getLicensePlate()).orElse(null);
-        ErrorResponse vehicleError = parkingValidator.ValidateCheckOutVehicle(existingVehicle, parkingLot);
+        ErrorResponse vehicleError = parkingLotValidator.ValidateCheckOutVehicle(existingVehicle, parkingLot);
         if (vehicleError != null) {
             return new ResponseEntity<>(vehicleError, HttpStatus.valueOf(vehicleError.getHttpStatusCode()));
         }

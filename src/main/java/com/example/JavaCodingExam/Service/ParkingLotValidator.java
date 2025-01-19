@@ -6,7 +6,7 @@ import com.example.JavaCodingExam.Entity.Vehicle;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ParkingValidator {
+public class ParkingLotValidator {
     public ErrorResponse ValidateCheckInVehicle(Vehicle vehicle) {
         if (vehicle == null) {
             return new ErrorResponse(404, "Vehicle does not exist");
